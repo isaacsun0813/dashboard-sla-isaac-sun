@@ -1,3 +1,5 @@
+import { reactive, computed, onMounted } from 'vue';
+
 <template>
   <div>
     <!-- Hide By status Bar -->
