@@ -184,6 +184,7 @@ export default{
           calstatusRowspan,
           getWWFromDate,
           hideShowALLstatus,
+          toggleStatus,
       };
   },
 
