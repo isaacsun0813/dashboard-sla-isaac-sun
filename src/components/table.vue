@@ -35,7 +35,7 @@
         </tr>
       </thead>
       <tbody>
-        <template v-for="(data, status, index) in productDataBystatus.data">
+        <template v-for="(data, status, index) in displayData">
           <!-- status -->
           <tr>
             <td class="width1" :rowspan="calstatusRowspan(data)">
@@ -84,25 +84,34 @@
       </tbody>
     </table>
     <!-- End of Table Design -->
+    <div class="pagination-controls">
+      <button @click="previousPage" :disabled="pageNumber <= 1">Previous</button>
+      <button @click="nextPage" :disabled="pageNumber >= numberOfPages">Next</button>
+      <span>Page {{ displayPageNumber }} of {{ calculateTotalPages}}</span>
+    </div>
   </div>
 </template>
 <script>
-import {reactive, computed, onMounted,toRefs} from 'vue';
+import {reactive, computed, onMounted,toRefs, watchEffect} from 'vue';
 import data from "../assets/data.json";
 
 export default{
   setup(){
+      //All const variables 
       const state = reactive({
           hidestatus: [],
           allCheckBox: [],
           wwInfo: {},
           hidden: false,
           UIData: data,
-
+          pageNumber: 0,
+          numberOfPages: 100,
       });
       const { hidestatus } = toRefs(state);
       const wwData = computed(() => `${state.wwInfo.year}WW${state.wwInfo.workweek}.${state.wwInfo.numofday}`);
       const productDataBystatus = computed(() => {
+        // Structures our data so that it is readable by our template 
+        // This returns an object, not an array. Important for pagination purposes. 
           let tmp = {};
           let statusSet = new Set();
 
@@ -125,15 +134,76 @@ export default{
 
           const sortedStringsArray = Array.from(statusSet).sort();
           statusSet = new Set(sortedStringsArray);
-
           return {
               status: Array.from(statusSet),
               data: tmp,
           };
       });
-      const toggleAllStatuses = () => {
-        state.hidestatus = state.hidestatus.length === state.productDataBystatus.status.length ? [] : [...state.productDataBystatus.status];
-    };
+      const displayData = computed(() => {
+      // Flatten the data
+        const flatData = [];
+        for (const status of Object.keys(productDataBystatus.value.data)) {
+          for (const core of Object.keys(productDataBystatus.value.data[status])) {
+            for (const product of productDataBystatus.value.data[status][core]) {
+              if (state.hidestatus.includes(status)) continue; // Skip if status is hidden
+                flatData.push({ status, core, ...product });
+              }
+            }
+          }
+          // Paginate
+        const startIndex = state.pageNumber * state.numberOfPages;
+        const endIndex = startIndex + state.numberOfPages-1;
+        const paginatedItems = flatData.slice(startIndex, endIndex);
+        // Reformat for the template
+        const templateData = {};
+        for (const item of paginatedItems) {
+          if (!templateData[item.status]) {
+            templateData[item.status] = {};
+          }
+          if (!templateData[item.status][item.core]) {
+            templateData[item.status][item.core] = [];
+          }
+          templateData[item.status][item.core].push(item);
+        }
+        return templateData;
+      });
+      
+      const calculateTotalPages = computed(() =>{
+        let total = 0;
+        for (const status in productDataBystatus.value.data){
+          for (const val in productDataBystatus.value.data[status]){
+            total += productDataBystatus.value.data[status][val].length;
+          }
+        }
+        return Math.ceil(total/state.numberOfPages);
+      });
+      const displayPageNumber = computed(() => {
+        if (calculateTotalPages.value == 0){
+          return 0 ;
+        }
+        return state.pageNumber+1;
+      })
+      //All Functions
+      function nextPage() {
+        const totalPages = calculateTotalPages.value;
+        // Increment page number if we are not on the last page. This functionality is critical because we have a limited data set now, 
+        // but if we have a larger dataset it'll be important to see all of that data. 
+        if (state.pageNumber < totalPages - 1) {
+          state.pageNumber++;
+        }
+        console.log('Current page after increment:', state.pageNumber);
+      }
+
+      function previousPage(){
+        if (state.pageNumber > 0){
+          state.pageNumber--;
+        }
+      }
+      function setPage(page){
+        //We will need to do error handling here
+        state.currentPage = page;
+      }
+
       function toggleStatus(status) {
         const index = state.hidestatus.indexOf(status);
         if (index > -1) {
@@ -141,6 +211,7 @@ export default{
         } else {
           state.hidestatus.push(status); // Add if it doesn't exist
         }
+        state.pageNumber = 0; // Reset the page number whenever a filter is toggled
       }
       //convert all of our methods into functions
       function calstatusRowspan(data){
@@ -169,6 +240,7 @@ export default{
         } else {
           state.hidestatus = [...productDataBystatus.value.status]; // Hide all statuses
         }
+        state.pageNumber = 0; // Reset the page number whenever 'All statuses' is toggled
       };
 
     onMounted(() => {
@@ -185,6 +257,12 @@ export default{
           getWWFromDate,
           hideShowALLstatus,
           toggleStatus,
+          displayData,
+          nextPage,
+          previousPage,
+          setPage,
+          calculateTotalPages,
+          displayPageNumber,
       };
   },
 
