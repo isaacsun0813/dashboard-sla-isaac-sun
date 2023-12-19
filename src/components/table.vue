@@ -1,11 +1,9 @@
 <template>
   <div>
-    <!-- Hide By status Bar -->
-    <tableCheckBox :statuses="productDataBystatus.status" :hidestatus="hidestatus"/>
-    <!-- Main Table Design -->
+    <tableCheckBox :statuses="productDataBystatus.status" :hidestatus="hidestatus" @toggleStatus="onToggleStatus" @hideShowAll="onHideShowAll"/>    <!-- Main Table Design -->
     <MainTable :wwData="wwData" :displayData="displayData" />
-    <!-- End of Table Design -->
-    <PaginationControls :pageNumber="pageNumber" :totalPages="calculateTotalPages" @change-page="setPage"/>  </div>
+    <PaginationControls :pageNumber="pageNumber" :totalPages="calculateTotalPages" :productDataBystatus="productDataBystatus" :numberOfPages="numberOfPages" @change-page="setPage"/>
+    </div>
 </template>
 <script>
 import tableCheckBox from './tableCheckBox.vue';
@@ -31,11 +29,11 @@ export default{
           pageNumber: 0,
           numberOfPages: 100,
       });
-      const { hidestatus } = toRefs(state);
       const wwData = computed(() => `${state.wwInfo.year}WW${state.wwInfo.workweek}.${state.wwInfo.numofday}`);
       const productDataBystatus = computed(() => {
         // Structures our data so that it is readable by our template 
         // This returns an object, not an array. Important for pagination purposes. 
+          console.log('hidestatus in computed property:', state.hidestatus);
           let tmp = {};
           let statusSet = new Set();
 
@@ -91,22 +89,25 @@ export default{
         }
         return templateData;
       });
-      
-      const calculateTotalPages = computed(() =>{
-        let total = 0;
-        for (const status in productDataBystatus.value.data){
-          for (const val in productDataBystatus.value.data[status]){
-            total += productDataBystatus.value.data[status][val].length;
-          }
+      const onToggleStatus = (status) => {
+        const index = state.hidestatus.indexOf(status);
+        if (index > -1) {
+        // If the status is already in the array, remove it
+          state.hidestatus.splice(index, 1);
+        } else {
+        // Otherwise, add the status to the array
+          state.hidestatus.push(status);
         }
-        return Math.ceil(total/state.numberOfPages);
-      });
-      const displayPageNumber = computed(() => {
-        if (calculateTotalPages.value == 0){
-          return 0 ;
+        // Since we're modifying the array directly, we need to ensure the change is reactive
+        state.hidestatus = [...state.hidestatus];
+        };
+      const onHideShowAll = () => {
+        if (state.hidestatus.length === productDataBystatus.value.status.length) {
+          state.hidestatus = [];
+        } else {
+          state.hidestatus = [...productDataBystatus.value.status];
         }
-        return state.pageNumber+1;
-      })
+      };
       //All Functions
 
       function setPage(page){
@@ -138,8 +139,8 @@ export default{
           getWWFromDate,
           displayData,
           setPage,
-          calculateTotalPages,
-          displayPageNumber,
+          onToggleStatus,
+          onHideShowAll,
       };
   },
 

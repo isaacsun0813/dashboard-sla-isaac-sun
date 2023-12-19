@@ -143,9 +143,8 @@
   }
   
   table {
-  width: 100%;
-  white-space: nowrap !important;
-  }
+  table-layout: fixed; /* We want FIXED table otherwise it is jarring to the user*/
+}
   
   table td {
   position: relative;
