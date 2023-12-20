@@ -1,8 +1,9 @@
 <template>
   <div>
     <tableCheckBox :statuses="productDataBystatus.status" :hidestatus="hidestatus" @toggleStatus="onToggleStatus" @hideShowAll="onHideShowAll"/>    <!-- Main Table Design -->
-    <MainTable :wwData="wwData" :displayData="displayData" />
-    <PaginationControls :pageNumber="pageNumber" :totalPages="calculateTotalPages" :productDataBystatus="productDataBystatus" :numberOfPages="numberOfPages" @change-page="setPage"/>
+    <SearchBar @apply-filters="applyFilters"/>
+    <MainTable :wwData="wwData" :displayData="filteredDisplayData || displayData" />
+    <PaginationControls :pageNumber="pageNumber" :totalPages="totalPages" @change-page="setPage"/>
     </div>
 </template>
 <script>
@@ -11,12 +12,13 @@ import MainTable from './MainTable.vue';
 import PaginationControls from './PaginationControls.vue';
 import {reactive, computed, onMounted,toRefs} from 'vue';
 import data from "../assets/data.json";
-
+import SearchBar from './SearchBar.vue';
 export default{
   components: {
     tableCheckBox,
     MainTable,
     PaginationControls,
+    SearchBar,
   },
   setup(){
       //All const variables 
@@ -27,7 +29,9 @@ export default{
           hidden: false,
           UIData: data,
           pageNumber: 0,
+          totalPages: 0,
           numberOfPages: 100,
+          filteredDisplayData: null,
       });
       const wwData = computed(() => `${state.wwInfo.year}WW${state.wwInfo.workweek}.${state.wwInfo.numofday}`);
       const productDataBystatus = computed(() => {
@@ -36,7 +40,7 @@ export default{
           console.log('hidestatus in computed property:', state.hidestatus);
           let tmp = {};
           let statusSet = new Set();
-
+          console.log("UI DATA", state.UIData)
           state.UIData.forEach((element) => {
               let status = element.Status;
               let cores = element.Cores;
@@ -60,6 +64,15 @@ export default{
               status: Array.from(statusSet),
               data: tmp,
           };
+      });
+      const calculateTotalPages = computed(() =>{
+        let total = 0;
+        for (const status in productDataBystatus.value.data){
+          for (const val in productDataBystatus.value.data[status]){
+            total += productDataBystatus.value.data[status][val].length;
+          }
+        }
+        return Math.ceil(total/state.numberOfPages);
       });
       const displayData = computed(() => {
       // Flatten the data
@@ -87,8 +100,10 @@ export default{
           }
           templateData[item.status][item.core].push(item);
         }
+        state.totalPages = calculateTotalPages.value;
         return templateData;
       });
+      
       const onToggleStatus = (status) => {
         const index = state.hidestatus.indexOf(status);
         if (index > -1) {
@@ -109,9 +124,48 @@ export default{
         }
       };
       //All Functions
+      function processDisplayData(data) {
+        const transformedData = {};
+        let total = 0;
+        for (const item of data) {
+          const status = item.Status;
+          const cores = item.Cores.toString(); // Make sure cores is a string if it's being used as a key
+          if (!transformedData[status]) {
+            transformedData[status] = {};
+          }
+          if (!transformedData[status][cores]) {
+            transformedData[status][cores] = [];
+          }
+          transformedData[status][cores].push(item);
+          total++;
+        }
+        state.totalPages = 1;
+        return transformedData;
+      }
+      
+      function applyFilters(filters) {
+        console.log('Filters received in parent:', filters); // This should log the filters object
+        state.pageNumber = 0;
+        // Perform filtering but if it is not included we assume true
+        const filteredData = state.UIData.filter(item => {
+          const statusMatch = !filters.status || item.Status === filters.status;
+          const coresMatch = filters.cores === null || item.Cores === filters.cores;
+          const productMatch = !filters.product || item.Product.toLowerCase().includes(filters.product.toLowerCase());
+          const lithographyMatch = !filters.lithography || parseInt(item.Lithography) === parseInt(filters.lithography);
+          const threadsMatch = filters.threads === null || item.Threads === filters.threads;
+          const baseFreqMatch = filters.baseFreq === null || parseFloat(item.BaseFreq) === filters.baseFreq;  
+          let maxFreqMatch = true;
+          if (filters.freqCheckbox && filters.maxFreq !== null) {
+            maxFreqMatch = parseFloat(item.MaxFreq) <= filters.maxFreq;
+          } else if (filters.maxFreq !== null) {
+            maxFreqMatch = parseFloat(item.MaxFreq) === filters.maxFreq;
+        }
+      return statusMatch && coresMatch && productMatch && lithographyMatch & threadsMatch && baseFreqMatch && maxFreqMatch;
+      });
+      state.filteredDisplayData = processDisplayData(filteredData);
+    }
 
       function setPage(page){
-        //We will need to do error handling here
         state.pageNumber = page;
       }
       function getWWFromDate(date = null){
@@ -138,6 +192,9 @@ export default{
           // Methods
           getWWFromDate,
           displayData,
+          applyFilters,
+          processDisplayData,
+          calculateTotalPages,
           setPage,
           onToggleStatus,
           onHideShowAll,

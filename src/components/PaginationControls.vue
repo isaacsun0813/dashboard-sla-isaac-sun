@@ -19,22 +19,15 @@ export default {
       type: Number,
       required: true
     },
-    productDataBystatus: { // New prop to receive the structured data for pagination
-      type: Object,
-      required: true
-    },
-    numberOfPages: { // Number of items per page
-      type: Number,
-      required: true
-    }
   },
   setup(props, { emit }) {
     // Convert props to refs
-    const { pageNumber, totalPages,productDataBystatus,numberOfPages} = toRefs(props);
+    const { pageNumber, totalPages} = toRefs(props);
 
     // Methods
     const nextPage = () => {
         console.log("CALLEd")
+
       if (pageNumber.value < totalPages.value - 1) {
         emit('change-page', pageNumber.value + 1);
       }
@@ -45,28 +38,16 @@ export default {
         emit('change-page', pageNumber.value - 1);
       }
     };
-    
-    const calculateTotalPages = computed(() =>{
-        let total = 0;
-        for (const status in productDataBystatus.value.data){
-          for (const val in productDataBystatus.value.data[status]){
-            total += productDataBystatus.value.data[status][val].length;
-          }
-        }
 
-        return Math.ceil(total/numberOfPages.value);
-      });
     const displayPageNumber = computed(() => {
-        if (calculateTotalPages.value == 0){
+        if (totalPages == 0){
           return 0 ;
         }
         return pageNumber.value+1;
       });
     return {
       pageNumber,
-      totalPages,
       displayPageNumber,
-      calculateTotalPages,
       nextPage,
       previousPage
     };
