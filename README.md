@@ -17,7 +17,7 @@ npm run build
 ```
 
 ### Progress
-'''
+
 12/15 - 12/16: Setup project, tested out functionality, noted down areas of improvement
 
 12/17: Finished converting from Vue2 to Vue3
@@ -26,31 +26,29 @@ npm run build
 
 12/19: Finished filtering code to allow for easy searching functionality.
 
-'''
 
 ### Decisions
-'''
-I didn't choose to use any new technologies (outside of Vue3) because I didn't believe we needed to complicate the project. I considered using Tailwind CSS because it makes styling much simpler however I felt that it would make the template portions very hard to read (especially considering how Vue3 renders the template).
 
-I decided to break down the components into what made the most sense to me. We needed a hide function (which was used to hide certain data), a search function (which was used to filter on different parameters), a table (which was meant to display the data), and also a paging component that allowed the user to move through data in a much more readable fashion. This led me to create four components that integrated with table.vue to create the project. I decided not to modularize the functions in table.vue further because I wanted a single source of truth without having to worry about passing more props through table and then through the functions. However that definitely could be a future improvement to be made on modularizing the code. 
+I made deliberate choices regarding the use of new technologies in this project, opting not to introduce any besides Vue 3. My reasoning was rooted in the belief that we didn't need to complicate the project further. While I considered the use of Tailwind CSS for its simplicity in styling, I decided against it. My concern was that it might make the template sections challenging to read, particularly given how Vue 3 renders templates.
 
-There were a lot of challenges that I faced in this project. For one, I've never used Vue extensively in the past. It was the first time learning to work with this technology so I had to spend a lot of time learning about Vue3 and how the composition API worked. The pagination component also proved to be more difficult than I imagined. It took a bit of design work to figure out how to work with 0-based indexing while also ensuring the user would see the correct numbers. 
+In designing the project, I divided it into components that made the most logical sense to me. This included implementing a 'hide' component for concealing specific data, a 'search' function for filtering based on various parameters, a 'table' component for displaying the data, and a 'pagination' component that improved data navigation. These components integrated with 'table.vue' to bring the project together. I consciously chose not to further modularize the functions within 'table.vue' to maintain a single source of truth, avoiding the complexity of passing additional props through 'table' and then through the functions. However, modularizing the code could be a future improvement worth considering.
 
-One decision I chose to make is that instead of writing a separate table component for the search function, I chose to reuse the MainTable code by structuring the filteredDisplayData into an object that was readable by MainTable. This saved me from having to write a good amount of code and also streamlined the process. 
+This project posed several challenges. As I hadn't extensively used Vue before, I had to invest considerable time in learning Vue 3 and comprehending the composition API. Additionally, the pagination component proved more challenging than expected. It required careful design to work with 0-based indexing while ensuring users would see the correct page numbers.
 
-The most difficult part was definitely working in the ranges on the filter function. I ran into many bugs with null and undefined and it took a lot of console debugging to figure out where I was going wrong. 
-'''
+One particular decision I made was to reuse the 'MainTable' code for the search function instead of creating a separate table component. I achieved this by structuring the 'filteredDisplayData' into an object that could be easily consumed by 'MainTable.' This approach saved me from writing a substantial amount of redundant code and streamlined the process.
+
+The most demanding aspect of the project was working with ranges in the filter function. I encountered numerous issues related to null and undefined values, necessitating extensive console debugging to identify and rectify the problems.
+
 
 ### Bonus Features
-'''
-I wanted to make the search function as user friendly as possible. Each of the parameters are labeled by their names and there are two buttons that can be used to filter on the given parameters and reset to display the regular data once you are finished. Instead of displaying information in rows of 100, I decided to simply lay it all out in the table. The rationale behind this is if individuals are searching for specific information, they should not have to have over 100 rows of data. 
 
-What could make this even better in the future is if we incorpoated some NLP into this. If we were able to say "Please find me a product that was Launched, is named Core i3-1110G4...", this would make the functionality far more powerful. 
-'''
+I aimed to make the search function as user-friendly as possible. Each parameter is clearly labeled with its respective name, and two buttons are provided for filtering based on the specified parameters and resetting to display the original data when done. Instead of presenting information in rows of 100, I opted to display it directly within the table. This decision was driven by the belief that users searching for specific information should not have to navigate through an excessive number of rows.
+
+Looking ahead, one potential enhancement for the future could involve the incorporation of Natural Language Processing. With NLP capabilities, users could issue more natural language queries like, 'Please find me a product that was launched and is named Core i3-1110G4...' This would greatly enhance the functionality and make the search feature even more powerful!
+
 ### Creativity and Initiative
-'''
-In my opinion, the most important part of data visualization tools are that they work. The original tooling already worked very well however it was a little unclear how certain functions worked. I decided to be more explicit with the naming (Hide Function/Search Function) so it would be more obvious what they were meant to do. In addition I chose to have All statuses in its own row (which symbolizes that it would hide all the statuses). In addition, I chose to add a slight green theme to the site. It makes it a bit easier to use as it highlights the key buttons that are supposed to be used on the screen. In addition I added a page number textbox to indicate which page we were on with the data. All in all I think these improvements have made the application more usable. 
-'''
+
+In my opinion, the most crucial aspect of data visualization tools is their functionality. While the original tooling worked well, there were some ambiguities in how certain functions operated. To address this, I made several enhancements. Firstly, I opted for more explicit function names, such as 'Hide Function' and 'Search Function,' to clarify their intended purposes. Additionally, I added a dedicated row for 'All statuses,' which signifies the ability to hide all statuses simultaneously. Furthermore, I introduced a subtle green theme to the site. This theme not only enhances visual appeal but also emphasizes the key buttons on the screen. Lastly, I included a page number textbox to indicate the current page within the dataset. Collectively, these improvements have significantly enhanced the usability of the application.
 
 
 
