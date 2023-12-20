@@ -117,58 +117,59 @@
   <style scoped>
   .fas.fa-times {
   display: none;
-  }
-  
-  .fas.fa-times.comment {
+}
+
+.fas.fa-times.comment {
   display: block;
-  }
-  
-  .overWrittenCells:hover .fas {
+}
+
+.overWrittenCells:hover .fas {
   display: block;
-  }
-  
-  .innerCells {
+}
+
+.innerCells {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  }
-  
-  .innerCells.comment {
+}
+
+.innerCells.comment {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   gap: 15px;
-  }
-  
-  table {
-  table-layout: fixed; /* We want FIXED table otherwise it is jarring to the user*/
 }
-  
-  table td {
+
+table {
+  width: 100%; /* Ensures table stretches to full container width */
+  border-collapse: collapse; /* Collapses border to avoid double border effect */
+}
+
+table td {
   position: relative;
-  }
-  
-  i {
+}
+
+i {
   cursor: pointer;
-  }
-  
-  input::placeholder {
+}
+
+input::placeholder {
   color: black;
-  }
-  
-  input:focus::-webkit-input-placeholder {
+}
+
+input:focus::-webkit-input-placeholder {
   color: grey;
-  }
-  
-  input[disabled] {
+}
+
+input[disabled] {
   cursor: text;
   background-color: inherit;
   color: black;
-  }
+}
 
-  select {
+select {
   position: absolute;
   top: 0;
   right: 0;
@@ -176,26 +177,46 @@
   bottom: 0;
   text-align: center;
   border: 0;
-  }
-  
-  table tr td:not(.skip),
-  table tr th {
+}
+
+table tr td:not(.skip),
+table tr th {
   text-align: center;
-  }
-  
-  td,
-  th {
+}
+
+td,
+th {
   padding: 2px !important;
-  width: 100px;
   border: 1px solid black;
-  }
-  .width1 {
-  width: 1%;
-  /* white-space: nowrap !important; */
-  }
-  
-  /* Vue's specific Deep combinator which can penetrate component boundaries */
-  ::v-deep .row-Announced input:disabled,
+}
+
+.width1 {
+  min-width: 50px; /* Minimum width for the first column */
+}
+
+.status-col {
+  width: auto; 
+}
+
+.cores-col {
+  width: auto; 
+}
+
+/* Allow for more flexible widths for content-heavy columns */
+table tr th, table tr td {
+  min-width: 120px; /* Set what looks to be a reasonable minimum width for each column */
+  max-width: 200px; /* Set a maximum width to prevent excessive stretching */
+  overflow: hidden; /* We need to hide overflow content */
+  text-overflow: ellipsis; /* Use ellipsis for overflow text */
+  white-space: nowrap; /* Keep content on a single line */
+}
+
+/* Specific adjustments for input fields */
+.innerCells input[type="text"] {
+  width: 100%; /* Ensure inputs take full width of the cell */
+  box-sizing: border-box; /* Include padding and border in the width */
+}
+    ::v-deep .row-Announced input:disabled,
   ::v-deep .row-Discontinued input:disabled,
   ::v-deep .row-Launched input:disabled,
   ::v-deep .row-LaunchedW input:disabled {

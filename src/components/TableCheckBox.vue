@@ -1,8 +1,20 @@
 <template>
+  <h1 class="dashboard-title" style="text-align: center; 
+                                      margin-top: 20px; 
+                                      margin-bottom: 20px; 
+                                      font-size: 28px; 
+                                      color: #333; 
+                                      font-weight: bold; 
+                                      border-bottom: 1px solid #ddd; 
+                                      padding-bottom: 10px; 
+                                      max-width: 1000px; 
+                                      margin-left: auto; 
+                                      margin-right: auto;">
+    Intel Product Dashboard
+  </h1>
   <div class="hideBar">
     <div class="title-container">
-      <h1 class="dashboard-title">Dashboard Data</h1>
-      <label class="hideLabel">Hide</label>
+      <label class="hideLabel">Hide Function</label>
     </div>
     <div class="checkbox-container">
       <div class="checkbox">
@@ -39,19 +51,12 @@ export default defineComponent({
       // Define a ref to track changes in the status list
       const localHideStatus = ref([...props.hidestatus]);
 
-      // Watch the prop for changes and update the local ref
-      watch(() => props.hidestatus, (newVal) => {
-        localHideStatus.value = [...newVal];
-      });
-
       // Methods
       const hideShowAll = () => {
-        console.log('Emitting hideShowAll');
         emit('hideShowAll');
       };
 
       const toggleStatus = (status) => {
-        console.log('Toggling status:', status);
         emit('toggleStatus', status);
       };
 
@@ -64,44 +69,100 @@ export default defineComponent({
 });
 </script>
 
-  
-  <!-- StatusCheckbox.css -->
-  <style scoped>
-  .hideBar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .title-container {
-    margin-bottom: 10px; /* Adjust as needed */
-  }
-  
-  .dashboard-title {
-    font-size: 1.5em; /* Adjust the size as you like */
-    margin: 0;
-  }
-  
-  .hideLabel {
-    margin-bottom: 10px; /* Adjust as needed */
-  }
-  
-  .checkbox-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .statuses {
+<style scoped>
+.hideBar {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 5px;
+  margin: 20px auto;
+  max-width: 1000px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background: #fff;
   display: flex;
-  justify-content: space-around; 
-  flex-wrap: wrap; 
-  width: 100%; 
+  flex-direction: column;
+  align-items: center;
+}
+
+.title-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.dashboard-title {
+  font-size: 24px;
+  color: #333;
+  margin: 0;
+  text-align: center;
+}
+
+.hideLabel {
+  font-size: 24px;
+  color: #333;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.checkbox-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.statuses {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
 }
 
 .status-checkbox {
-  margin: 5px; 
+  display: flex;
+  align-items: center;
+  margin: 5px;
 }
-    </style>
-  
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 15px; /* Align the 'All statuses' checkbox with others */
+}
+
+.checkbox label,
+.status-checkbox label {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+  font-size: 16px;
+  color: #333;
+}
+
+.styled {
+  accent-color: #5CDB95; /* A green accent color for the checkboxes */
+}
+
+@media (max-width: 768px) {
+  .title-container {
+    flex-direction: column; /* This is just a bit of basic handling for responsive design */
+  }
+  .hideLabel {
+    margin-top: 10px;
+  }
+  .checkbox-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .checkbox,
+  .status-checkbox {
+    justify-content: flex-start;
+  }
+}
+</style>

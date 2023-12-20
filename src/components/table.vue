@@ -1,11 +1,12 @@
 <template>
   <div>
     <tableCheckBox :statuses="productDataBystatus.status" :hidestatus="hidestatus" @toggleStatus="onToggleStatus" @hideShowAll="onHideShowAll"/>    <!-- Main Table Design -->
-    <SearchBar @apply-filters="applyFilters"/>
+    <SearchBar @apply-filters="applyFilters" @reset-filters="resetFilters"/>
     <MainTable :wwData="wwData" :displayData="filteredDisplayData || displayData" />
     <PaginationControls :pageNumber="pageNumber" :totalPages="totalPages" @change-page="setPage"/>
     </div>
 </template>
+
 <script>
 import tableCheckBox from './tableCheckBox.vue';
 import MainTable from './MainTable.vue';
@@ -29,18 +30,16 @@ export default{
           hidden: false,
           UIData: data,
           pageNumber: 0,
-          totalPages: 0,
-          numberOfPages: 100,
+          totalPages: 0, 
+          numberOfPages: 100, //This should be changed depending on what the specs are
           filteredDisplayData: null,
       });
       const wwData = computed(() => `${state.wwInfo.year}WW${state.wwInfo.workweek}.${state.wwInfo.numofday}`);
       const productDataBystatus = computed(() => {
         // Structures our data so that it is readable by our template 
         // This returns an object, not an array. Important for pagination purposes. 
-          console.log('hidestatus in computed property:', state.hidestatus);
           let tmp = {};
           let statusSet = new Set();
-          console.log("UI DATA", state.UIData)
           state.UIData.forEach((element) => {
               let status = element.Status;
               let cores = element.Cores;
@@ -66,6 +65,7 @@ export default{
           };
       });
       const calculateTotalPages = computed(() =>{
+        //Calculates the number of pages of data we will render. This is rendered on user side 
         let total = 0;
         for (const status in productDataBystatus.value.data){
           for (const val in productDataBystatus.value.data[status]){
@@ -75,7 +75,7 @@ export default{
         return Math.ceil(total/state.numberOfPages);
       });
       const displayData = computed(() => {
-      // Flatten the data
+      // This is passed to our MainTable Component. It is used to display the data
         const flatData = [];
         for (const status of Object.keys(productDataBystatus.value.data)) {
           for (const core of Object.keys(productDataBystatus.value.data[status])) {
@@ -85,7 +85,7 @@ export default{
               }
             }
           }
-          // Paginate
+          // Dictate what pages we want to use
         const startIndex = state.pageNumber * state.numberOfPages;
         const endIndex = startIndex + state.numberOfPages-1;
         const paginatedItems = flatData.slice(startIndex, endIndex);
@@ -105,6 +105,7 @@ export default{
       });
       
       const onToggleStatus = (status) => {
+        // Used to indicate which status we are trying to use in our Dashboard.
         const index = state.hidestatus.indexOf(status);
         if (index > -1) {
         // If the status is already in the array, remove it
@@ -125,6 +126,7 @@ export default{
       };
       //All Functions
       function processDisplayData(data) {
+        //Proccesses the data into the object format that the MainTable component expects
         const transformedData = {};
         let total = 0;
         for (const item of data) {
@@ -140,11 +142,12 @@ export default{
           total++;
         }
         state.totalPages = 1;
+        console.log("transformed filter data",transformedData)
         return transformedData;
       }
       
       function applyFilters(filters) {
-        console.log('Filters received in parent:', filters); // This should log the filters object
+        // Response to our SearchBar component; uses the filters to get the appropriate data 
         state.pageNumber = 0;
         // Perform filtering but if it is not included we assume true
         const filteredData = state.UIData.filter(item => {
@@ -153,22 +156,32 @@ export default{
           const productMatch = !filters.product || item.Product.toLowerCase().includes(filters.product.toLowerCase());
           const lithographyMatch = !filters.lithography || parseInt(item.Lithography) === parseInt(filters.lithography);
           const threadsMatch = filters.threads === null || item.Threads === filters.threads;
-          const baseFreqMatch = filters.baseFreq === null || parseFloat(item.BaseFreq) === filters.baseFreq;  
-          let maxFreqMatch = true;
-          if (filters.freqCheckbox && filters.maxFreq !== null) {
-            maxFreqMatch = parseFloat(item.MaxFreq) <= filters.maxFreq;
-          } else if (filters.maxFreq !== null) {
-            maxFreqMatch = parseFloat(item.MaxFreq) === filters.maxFreq;
-        }
-      return statusMatch && coresMatch && productMatch && lithographyMatch & threadsMatch && baseFreqMatch && maxFreqMatch;
-      });
-      state.filteredDisplayData = processDisplayData(filteredData);
-    }
+          const baseFreqMatch = (filters.baseFreqMin === undefined && filters.baseFreqMax === undefined)|| //if both undefined 
+                          (filters.baseFreqMin === null && filters.baseFreqMax === null) || //if both null. This check may be unnecessary 
+                          (item.Base_Freq >= (filters.baseFreqMin || -Infinity) && //Checks the range 
+                           item.Base_Freq <= (filters.baseFreqMax || Infinity));
+          const maxFreqMatch = (filters.maxFreqMin === undefined && filters.maxFreqMax === undefined) ||
+                         (filters.maxFreqMin === null && filters.maxFreqMax === null) ||
+                         (item.Max_Turbo_Freq >= (filters.maxFreqMin || -Infinity) &&
+                          item.Max_Turbo_Freq <= (filters.maxFreqMax || Infinity));
+
+        return statusMatch && coresMatch && productMatch && lithographyMatch & threadsMatch && baseFreqMatch && maxFreqMatch;
+        });
+        state.filteredDisplayData = processDisplayData(filteredData);
+
+      }
+      function resetFilters() {
+        // Resets all of our filters. Another response function to SearchBar component
+        state.filteredDisplayData = null; // This allows our program to go back onto the original displayData
+        state.totalPages = calculateTotalPages.value;// This also resets out entire paging so that it will be rendered correctly
+      }
 
       function setPage(page){
+        // Sets the page we are one
         state.pageNumber = page;
       }
       function getWWFromDate(date = null){
+        // Default provided function
           let currentDate = date || new Date();
           let startDate = new Date(currentDate.getFullYear(), 0, 1);
           let days = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
@@ -185,17 +198,18 @@ export default{
     });
 
       return {
-          ...toRefs(state), //StackOverflow - suppsed to make properties reactive
+          ...toRefs(state), 
           // Computations
           productDataBystatus,
           wwData,
+          displayData,
+          calculateTotalPages,
           // Methods
           getWWFromDate,
-          displayData,
           applyFilters,
           processDisplayData,
-          calculateTotalPages,
           setPage,
+          resetFilters,
           onToggleStatus,
           onHideShowAll,
       };
